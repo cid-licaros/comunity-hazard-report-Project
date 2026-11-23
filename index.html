@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>HazardPin – Community hazard reporting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home">
+
+  <header>
+    <div class="wrap bar">
+      <a class="logo" href="index.html"><i></i>HazardPin</a>
+      <nav id="nav" aria-label="Main">
+        <a href="reports.html">Reports</a>
+        <a href="report.html">Report a Hazard</a>
+        <a href="index.html#how">How it works</a>
+      </nav>
+      <button class="ib" id="theme" aria-label="Switch light or dark mode">☾</button>
+      <button class="ib" id="menuBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <div>
+        <h1>Report hazards in your neighborhood</h1>
+        <p>Pin fallen trees and blocked pathways on the map, track whether they have been handled, and check the weather at the exact spot.</p>
+        <div class="cta">
+          <a class="btn pri" href="report.html">Report a Hazard</a>
+          <a class="btn" href="reports.html">View Reports</a>
+        </div>
+        <div class="stats">
+          <div><b id="sCount">0</b>reports</div>
+          <div><b id="sPend">0</b>pending</div>
+          <div><b id="sRes">0</b>resolved</div>
+        </div>
+      </div>
+
+      <!-- Decorative map illustration -->
+      <div class="mapbox heroimg">
+        <svg viewBox="0 0 600 520" role="img" aria-label="Illustration: hazard pins on a neighborhood map">
+          <rect width="600" height="520" fill="var(--land)"/>
+          <path d="M0 430 C120 380 200 470 330 430 S520 380 600 420 V520 H0Z" fill="var(--water)"/>
+          <g stroke="var(--road)" stroke-width="9" fill="none" stroke-linecap="round">
+            <path d="M0 260 H600"/>
+            <path d="M300 0 V520"/>
+            <path d="M60 40 L300 260 L560 480" stroke-width="6"/>
+            <path d="M120 120 H480" stroke-width="6"/>
+          </g>
+          <g stroke="#fff" stroke-width="3">
+            <circle cx="340" cy="215" r="16" fill="#e07a1f"/>
+            <circle cx="235" cy="305" r="16" fill="#3d7ccf"/>
+            <circle cx="410" cy="335" r="16" fill="#2a9d8f"/>
+            <circle cx="185" cy="185" r="16" fill="#e07a1f"/>
+            <circle cx="450" cy="145" r="16" fill="#3d7ccf"/>
+          </g>
+          <g font-size="16" text-anchor="middle">
+            <text x="340" y="221">🌳</text>
+            <text x="235" y="311">🚧</text>
+            <text x="410" y="341">🌳</text>
+            <text x="185" y="191">🚧</text>
+            <text x="450" y="151">🌳</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <section id="how">
+      <div class="wrap">
+        <div class="head"><h2>How it works</h2></div>
+        <div class="how">
+          <div>
+            <h3>Pin the exact spot</h3>
+            <p>Tap the map or use your location, add a short description and an optional photo.</p>
+          </div>
+          <div>
+            <h3>Track the status</h3>
+            <p>Every report moves from Pending to In Progress to Resolved, with a history of changes.</p>
+          </div>
+          <div>
+            <h3>Check the weather</h3>
+            <p>Live OpenWeather data for the hazard location, so you know if rain or wind may make it worse.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="band">
+          <div>
+            <h2>Seen a fallen tree or blocked path?</h2>
+            <p>Report it in a minute so your neighbors and the barangay know.</p>
+          </div>
+          <a class="btn" href="report.html">Report a Hazard</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">HazardPin · Map data © OpenStreetMap contributors · Weather data: OpenWeather.</div>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hazard Reports – HazardPin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="reports">
+
+  <header>
+    <div class="wrap bar">
+      <a class="logo" href="index.html"><i></i>HazardPin</a>
+      <nav id="nav" aria-label="Main">
+        <a href="reports.html" aria-current="page">Reports</a>
+        <a href="report.html">Report a Hazard</a>
+        <a href="index.html#how">How it works</a>
+      </nav>
+      <button class="ib" id="theme" aria-label="Switch light or dark mode">☾</button>
+      <button class="ib" id="menuBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="wrap">
+        <div class="head">
+          <h2>Hazard Reports</h2>
+          <span class="meta" id="result"></span>
+        </div>
+
+        <div class="keybar">
+          <label for="apiKey">OpenWeather API key</label>
+          <input type="password" id="apiKey" placeholder="Paste your own API key" autocomplete="off" spellcheck="false">
+          <p class="meta">For classroom use only. Kept for this browser tab only, never saved with the reports.</p>
+        </div>
+
+        <div class="mapbox findmap">
+          <div id="map" role="region" aria-label="Map of reported hazards"></div>
+          <div class="legend">Tap a pin to see its weather · orange pending, blue in progress, green resolved</div>
+        </div>
+
+        <div class="panel" aria-live="polite">
+          <h3>Weather at selected report</h3>
+          <div id="wx"><p class="meta">Select a pin or a report to see current weather there.</p></div>
+        </div>
+
+        <div class="chips" id="chips">
+          <button class="chip" data-k="status" data-v="all" aria-pressed="true">All</button>
+          <button class="chip" data-k="status" data-v="Pending" aria-pressed="false">Pending</button>
+          <button class="chip" data-k="status" data-v="In Progress" aria-pressed="false">In Progress</button>
+          <button class="chip" data-k="status" data-v="Resolved" aria-pressed="false">Resolved</button>
+          <select class="chip" id="sort" aria-label="Sort reports">
+            <option value="new">Newest first</option>
+            <option value="old">Oldest first</option>
+            <option value="status">By status</option>
+          </select>
+        </div>
+
+        <div class="grid" id="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">HazardPin · Map data © OpenStreetMap contributors · Weather data: OpenWeather.</div>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- Report details popup -->
+  <dialog id="dlg" aria-labelledby="dTitle">
+    <div class="dh">
+      <h3 id="dTitle">Report details</h3>
+      <button class="ib" id="dClose" aria-label="Close">✕</button>
+    </div>
+    <div class="db" id="dBody"></div>
+  </dialog>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

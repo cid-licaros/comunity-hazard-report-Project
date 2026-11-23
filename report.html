@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Report a Hazard – HazardPin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="report">
+
+  <header>
+    <div class="wrap bar">
+      <a class="logo" href="index.html"><i></i>HazardPin</a>
+      <nav id="nav" aria-label="Main">
+        <a href="reports.html">Reports</a>
+        <a href="report.html" aria-current="page">Report a Hazard</a>
+        <a href="index.html#how">How it works</a>
+      </nav>
+      <button class="ib" id="theme" aria-label="Switch light or dark mode">☾</button>
+      <button class="ib" id="menuBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="wrap">
+        <div class="head">
+          <h2>Report a Hazard</h2>
+          <span class="meta">Your report shows on the map right after you submit it.</span>
+        </div>
+
+        <form class="post" id="postForm" novalidate>
+          <label>Location
+            <input type="text" id="pLoc" placeholder="Fills in when you tap the map (you can edit it)">
+          </label>
+
+          <div>
+            <div class="lbl">Pin the exact location</div>
+            <div class="pickmap"><div id="pick"></div></div>
+            <p class="meta" id="pickInfo">Tap the map where the hazard is. You can drag the pin to adjust it.</p>
+            <button type="button" class="btn" id="useMe">Use my current location</button>
+          </div>
+
+          <div class="panel" aria-live="polite" style="margin:0">
+            <h3>Weather at this spot</h3>
+            <label for="apiKey">OpenWeather API key</label>
+            <input type="password" id="apiKey" placeholder="Paste your own API key" autocomplete="off" spellcheck="false">
+            <p class="meta">Classroom use only. Kept for this tab only.</p>
+            <div id="wx"><p class="meta">Pin a location to see current weather.</p></div>
+          </div>
+
+          <label>What happened? Explain
+            <textarea id="pDesc" rows="3" maxlength="200" placeholder="Describe what happened and what is blocked"></textarea>
+          </label>
+
+          <label>Your name (optional)
+            <input type="text" id="pName" maxlength="40" placeholder="Anonymous">
+          </label>
+
+          <label>Photo
+            <div class="drop" id="drop" tabindex="0" role="button">Upload photo</div>
+          </label>
+          <input type="file" id="pFile" accept="image/*" hidden>
+
+          <p class="err" id="pErr" role="alert"></p>
+          <button class="btn pri" type="submit" style="justify-self:end">Submit Report</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">HazardPin · Map data © OpenStreetMap contributors · Weather data: OpenWeather.</div>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
