@@ -5,7 +5,7 @@
 
 const PAGE = document.body.dataset.page;
 
-// Default map center (Tankulan, Manolo Fortich). Change this to your own area.
+
 const DEFAULT_LAT = 8.3596;
 const DEFAULT_LNG = 124.8686;
 
