@@ -260,9 +260,16 @@ function drawMap(visibleReports) {
     );
 
     // Click: highlight the pin, load its weather, and open the full details popup.
+    // The popup opens first, because selectReport() redraws every pin
+    // (including the one being clicked).
     marker.on("click", () => {
+      try {
+        openReportDetails(report.id);
+      } catch (err) {
+        console.error("Could not open report details:", err);
+        showToast("Could not open details. Check the browser console.");
+      }
       selectReport(report.id, false);
-      openReportDetails(report.id);
     });
   });
 
