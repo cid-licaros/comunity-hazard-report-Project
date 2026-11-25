@@ -1,8 +1,6 @@
 // HazardPin – shared script for all three pages (home, reports, report).
 // Each page sets <body data-page="..."> so we know which part to run.
 
-//notes
-
 const PAGE = document.body.dataset.page;
 
 
@@ -57,6 +55,16 @@ function showToast(message) {
 // Link that opens the OpenWeather map centered on a spot.
 function openWeatherMapUrl(lat, lng) {
   return `https://openweathermap.org/weathermap?basemap=map&cities=true&layer=temperature&lat=${lat}&lon=${lng}&zoom=14`;
+}
+
+// Link that opens Google Maps on a spot.
+function googleMapsUrl(lat, lng) {
+  return `https://www.google.com/maps?q=${lat},${lng}`;
+}
+
+// The teardrop pin used on both maps (colored by status).
+function pinHtml(status, extraClass = "") {
+  return `<div class="pin${extraClass}" style="--c:${STATUS_COLORS[status]}"><span>${HAZARD_ICON}</span></div>`;
 }
 
 
@@ -159,17 +167,23 @@ async function fetchWeather(lat, lng) {
   return data;
 }
 
-async function showWeather(lat, lng, label) {
-  const box = $("#wx");
+// Shows the weather inside a box. By default it uses the #wx panel,
+// but the details popup passes its own box ("#dWx").
+async function showWeather(lat, lng, label, boxSelector = "#wx") {
+  const box = $(boxSelector);
   if (!box) return;
 
-  // If the user clicks around quickly, only the newest request is allowed to update the box.
+  // If the user clicks around quickly, only the newest request for this box may update it.
+  // (Each box remembers its own latest request, so two boxes don't cancel each other.)
   const requestId = ++latestWeatherRequest;
+  box.dataset.req = requestId;
   box.innerHTML = '<p class="meta">Loading weather…</p>';
+
+  const isStale = () => box.dataset.req !== String(requestId);
 
   try {
     const data = await fetchWeather(lat, lng);
-    if (requestId !== latestWeatherRequest) return;
+    if (isStale()) return;
 
     const condition = (data.weather && data.weather[0]) || {};
     const iconOk = /^\d{2}[dn]$/.test(condition.icon || "");
@@ -197,7 +211,7 @@ async function showWeather(lat, lng, label) {
       </div>
       ${isRisky ? '<p class="warn">⚠ Rain or strong wind right now. Hazards like this can get worse, so take care nearby.</p>' : ""}`;
   } catch (err) {
-    if (requestId !== latestWeatherRequest) return;
+    if (isStale()) return;
     box.innerHTML = `<p class="err">${escapeHtml(err.message || "Could not load weather data.")}</p>`;
   }
 }
@@ -213,7 +227,7 @@ function makePinIcon(report) {
   const selectedClass = selectedId === report.id ? " sel" : "";
   return L.divIcon({
     className: "",
-    html: `<div class="pin${selectedClass}" style="--c:${STATUS_COLORS[report.status]}"><span>${HAZARD_ICON}</span></div>`,
+    html: pinHtml(report.status, selectedClass),
     iconSize: [36, 36],
     iconAnchor: [18, 34]
   });
@@ -223,7 +237,7 @@ function drawMap(visibleReports) {
   // Create the map the first time only.
   if (!map) {
     map = L.map("map").setView([DEFAULT_LAT, DEFAULT_LNG], 15);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
@@ -238,8 +252,18 @@ function drawMap(visibleReports) {
       title: "Hazard · " + report.status
     }).addTo(pinLayer);
 
-    marker.bindTooltip("Hazard · " + report.status);
-    marker.on("click", () => selectReport(report.id, false));
+    // Hover: short preview of what happened at this spot.
+    const shortDesc = report.desc.length > 60 ? report.desc.slice(0, 60) + "…" : report.desc;
+    marker.bindTooltip(
+      `<b>${escapeHtml(report.loc)}</b><br>${escapeHtml(shortDesc)}`,
+      { direction: "top", offset: [0, -30] }
+    );
+
+    // Click: highlight the pin, load its weather, and open the full details popup.
+    marker.on("click", () => {
+      selectReport(report.id, false);
+      openReportDetails(report.id);
+    });
   });
 
   // Only re-fit the view when the visible reports actually change,
@@ -268,7 +292,7 @@ function getVisibleReports() {
 
 function reportCardHtml(report) {
   return `
-    <article class="card ${selectedId === report.id ? "on" : ""}" data-id="${report.id}" tabindex="0" aria-label="Select hazard report">
+    <article class="card ${selectedId === report.id ? "on" : ""}" data-id="${escapeHtml(report.id)}" tabindex="0" aria-label="Select hazard report">
       <div class="photo" style="${photoStyle(report)}">
         ${report.photo ? "" : HAZARD_ICON}
         <span class="badge" style="background:${STATUS_COLORS[report.status]};color:#fff">${report.status}</span>
@@ -277,7 +301,7 @@ function reportCardHtml(report) {
         <h3>${HAZARD_ICON} Hazard report</h3>
         <div class="meta">${escapeHtml(report.loc)} · ${formatDate(report.created)}</div>
         <p class="desc">${escapeHtml(report.desc)}</p>
-        <button class="del upd" data-open="${report.id}">Details &amp; update status</button>
+        <button class="del upd" data-open="${escapeHtml(report.id)}">Details &amp; update status</button>
       </div>
     </article>`;
 }
@@ -333,15 +357,20 @@ function openReportDetails(id) {
     .map(h => `<li><b>${escapeHtml(h.status)}</b> · <span class="meta">${formatDate(h.at)}</span></li>`)
     .join("");
 
-  $("#dTitle").textContent = "Hazard report";
+  $("#dTitle").textContent = "Hazard details";
   $("#dBody").innerHTML = `
     <div class="big" style="${photoStyle(report)}">${report.photo ? "" : HAZARD_ICON}</div>
     <div>
       <h3 style="font-size:1.4rem">${HAZARD_ICON} Hazard report</h3>
       <div class="meta">${escapeHtml(report.loc)}</div>
       <div class="meta">Reported by ${escapeHtml(report.name)} · ${formatDate(report.created)} · ${report.lat.toFixed(5)}, ${report.lng.toFixed(5)}</div>
-      <p>${escapeHtml(report.desc)}</p>
+      <div class="lbl" style="margin-top:12px">What happened</div>
+      <p style="margin:0 0 10px">${escapeHtml(report.desc)}</p>
       <span class="tag" style="--c:${STATUS_COLORS[report.status]}"><span class="dot"></span>${report.status}</span>
+    </div>
+    <div class="panel" style="margin:0">
+      <h3>Weather at this spot</h3>
+      <div id="dWx"></div>
     </div>
     <div class="stbar">
       <label>Update status<select class="fld" id="dStatus">${statusOptions}</select></label>
@@ -351,6 +380,7 @@ function openReportDetails(id) {
       <div class="lbl">Status history</div>
       <ul class="tl">${historyItems}</ul>
     </div>
+    <a class="btn" href="${googleMapsUrl(report.lat, report.lng)}" target="_blank" rel="noopener">Open in Google Maps</a>
     <a class="btn" href="${openWeatherMapUrl(report.lat, report.lng)}" target="_blank" rel="noopener">View on OpenWeather map</a>
     <button class="del" id="dDel">Delete report</button>`;
 
@@ -383,6 +413,7 @@ function openReportDetails(id) {
   };
 
   $("#dlg").showModal();
+  showWeather(report.lat, report.lng, "Hazard location", "#dWx");
 }
 
 if (PAGE === "reports") {
@@ -445,7 +476,7 @@ if (PAGE === "report") {
   let addressTimer;
 
   const pickMap = L.map("pick").setView([DEFAULT_LAT, DEFAULT_LNG], 16);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(pickMap);
@@ -527,13 +558,23 @@ if (PAGE === "report") {
     }, 400);
   }
 
+  // Same orange hazard pin as the Reports page, so the form matches the map.
+  function makeFormPinIcon() {
+    return L.divIcon({
+      className: "",
+      html: pinHtml("Pending"),
+      iconSize: [36, 36],
+      iconAnchor: [18, 34]
+    });
+  }
+
   function setPin(lat, lng) {
     pinPosition = [lat, lng];
 
     if (pinMarker) {
       pinMarker.setLatLng(pinPosition);
     } else {
-      pinMarker = L.marker(pinPosition, { draggable: true }).addTo(pickMap);
+      pinMarker = L.marker(pinPosition, { draggable: true, icon: makeFormPinIcon() }).addTo(pickMap);
       pinMarker.on("dragend", () => {
         const spot = pinMarker.getLatLng();
         setPin(spot.lat, spot.lng);
