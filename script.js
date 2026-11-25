@@ -450,9 +450,48 @@ if (PAGE === "report") {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(pickMap);
 
+  /* Type a place name in the Location box and the map pin moves there. */
+
+  let searchTimer;
+  let latestSearch = 0;
+
   $("#pLoc").addEventListener("input", () => {
-    locationIsAutoFilled = false;
+    locationIsAutoFilled = false; // the user typed this, so the map must not overwrite it
+
+    // Wait until they stop typing. This keeps us under Nominatim's limit of about 1 request per second.
+    clearTimeout(searchTimer);
+    const query = $("#pLoc").value.trim();
+    if (query.length < 3) return;
+
+    searchTimer = setTimeout(() => searchLocation(query), 800);
   });
+
+  async function searchLocation(query) {
+    const requestId = ++latestSearch; // only the newest search may move the pin
+    $("#pickInfo").textContent = "Searching for \"" + query + "\"…";
+
+    try {
+      const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ph&accept-language=en&q="
+        + encodeURIComponent(query);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Search failed");
+      const results = await response.json();
+      if (requestId !== latestSearch) return;
+
+      if (!results.length) {
+        $("#pickInfo").textContent = "No place found for \"" + query + "\". Try a more specific name or tap the map.";
+        return;
+      }
+
+      const lat = parseFloat(results[0].lat);
+      const lng = parseFloat(results[0].lon);
+      setPin(lat, lng);
+      pickMap.setView([lat, lng], 17);
+    } catch (err) {
+      if (requestId !== latestSearch) return;
+      $("#pickInfo").textContent = "Could not search right now. Tap the map instead.";
+    }
+  }
 
   // Look up a street name for the pin and put it in the Location box.
   // The short delay stops us from spamming the address service while the pin is being dragged.
