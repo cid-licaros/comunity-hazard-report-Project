@@ -812,3 +812,25 @@ footer {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ---------- Map hover preview ---------- */
+.leaflet-tooltip {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  max-width: 220px;
+  white-space: normal;
+}
+
+.leaflet-tooltip-top::before {
+  border-top-color: var(--surface);
+}
+
+/* Buttons stacked in the details popup */
+.db .btn {
+  width: 100%;
+}
